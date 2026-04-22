@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>IT Global — Присоединяйся к команде</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/RkJWBxDb/i.webp">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0A0F1E, #03060C);
+            font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            color: #eef5ff;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Шрифт Dan */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+        .dan-font {
+            font-family: 'Orbitron', 'Segoe UI', monospace;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* АНИМАЦИЯ ПОЯВЛЕНИЯ СЛОВ */
+        .hero-title {
+            text-align: center;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            line-height: 1.2;
+            text-transform: uppercase;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .word {
+            font-size: clamp(3rem, 12vw, 6rem);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        .word:nth-child(1) { animation-delay: 0.2s; }
+        .word:nth-child(2) { animation-delay: 0.7s; }
+        .word:nth-child(3) { animation-delay: 1.2s; }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .title-light {
+            background: linear-gradient(135deg, #ffffff, #b8f2ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .title-blue {
+            background: linear-gradient(135deg, #3b82f6, #00f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .title-green {
+            background: linear-gradient(135deg, #4ade80, #00ffaa);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subhead {
+            text-align: center;
+            font-size: 1.3rem;
+            max-width: 700px;
+            margin: 0 auto 3rem auto;
+            color: #b9d0f0;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 1.7s forwards;
+            transform: translateY(20px);
+        }
+
+        /* Карточки сервисов */
+        .services-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin: 3rem 0 4rem;
+        }
+
+        .service-card {
+            background: rgba(12, 25, 45, 0.65);
+            backdrop-filter: blur(8px);
+            border-radius: 2rem;
+            padding: 2rem 1.8rem;
+            width: 280px;
+            text-align: center;
+            border: 1px solid rgba(59,130,246,0.5);
+            transition: all 0.25s ease;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .service-card:nth-child(1) { animation-delay: 0.3s; }
+        .service-card:nth-child(2) { animation-delay: 0.6s; }
+        .service-card:nth-child(3) { animation-delay: 0.9s; }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            border-color: #4ade80;
+            box-shadow: 0 20px 35px -10px #00aaff40, 0 0 15px #00ffaa30;
+        }
+
+        .service-icon {
+            font-size: 3.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-card h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #c0e0ff, #6ee7ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .service-card p {
+            color: #b8d0fc;
+            font-size: 0.95rem;
+        }
+
+        /* Блок преимуществ */
+        .benefits {
+            background: rgba(0, 20, 50, 0.5);
+            border-radius: 2rem;
+            padding: 2rem 2rem;
+            margin: 3rem 0;
+            backdrop-filter: blur(4px);
+            border: 1px solid #2c5282;
+        }
+
+        .benefits h2, .openings h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.5px;
+            border-left: 5px solid #00ffaa;
+            padding-left: 1rem;
+        }
+
+        .benefits-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .benefit-item {
+            flex: 1;
+            min-width: 200px;
+            background: #0f172a60;
+            padding: 1.2rem;
+            border-radius: 1.2rem;
+            font-weight: 500;
+            text-align: center;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .benefit-item:hover {
+            border-color: #4ade80;
+            background: #1a274480;
+            transform: translateY(-3px);
+        }
+
+        .benefit-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .benefit-title {
+            font-size: 1.2rem;
+            color: #00ffaa;
+            margin-bottom: 0.5rem;
+        }
+
+        .benefit-desc {
+            font-size: 0.85rem;
+            color: #b8d0fc;
+        }
+
+        /* Блок про нейросети */
+        .ai-requirements {
+            background: linear-gradient(135deg, #0a1a3a, #0a0f2a);
+            border-radius: 2rem;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid #3b82f6;
+            text-align: center;
+        }
+
+        .ai-requirements h3 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            color: #00f2fe;
+        }
+
+        .badge-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .badge {
+            background: rgba(0, 255, 170, 0.15);
+            border: 1px solid #4ade80;
+            padding: 0.5rem 1.2rem;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            color: #a0f0d0;
+        }
+
+        /* ФОРМА ЗАЯВКИ */
+        .application-form {
+            background: rgba(0, 20, 50, 0.6);
+            border-radius: 2rem;
+            padding: 2rem;
+            margin: 3rem 0;
+            border: 1px solid #3b82f6;
+        }
+
+        .application-form h2 {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #00ffaa;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-group label {
+            color: #b5f0ff;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group textarea {
+            background: rgba(10, 20, 40, 0.8);
+            border: 1px solid #2c5282;
+            border-radius: 1rem;
+            padding: 0.8rem 1rem;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #00ffaa;
+            box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-full {
+            grid-column: 1 / -1;
+        }
+
+        .submit-btn {
+            background: linear-gradient(95deg, #0055ff, #00c3ff);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 3rem;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px #00ffaa80;
+        }
+
+        /* Слоган, появляющийся при скролле */
+        .slogan-block {
+            text-align: center;
+            padding: 4rem 2rem;
+            margin-top: 3rem;
+            background: linear-gradient(135deg, #0a1a3a, #030612);
+            border-radius: 3rem;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+            border: 1px solid #2c5282;
+        }
+
+        .slogan-block.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slogan-text {
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: 600;
+            background: linear-gradient(135deg, #ffffff, #00f2fe, #4ade80);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .slogan-sub {
+            font-size: 1rem;
+            color: #80b0e0;
+            margin-top: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #1f3a5f;
+            color: #80b0e0;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 760px) {
+            .container {
+                padding: 1rem 1rem 2rem;
+            }
+            .services-grid {
+                flex-direction: column;
+                align-items: center;
+            }
+            .benefit-item {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ШАПКА -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="https://i.ibb.co/RkJWBxDb/i.webp" alt="IT Global" style="width: 48px; height: 48px; border-radius: 16px;">
+                <span class="dan-font" style="font-size: 1.5rem; background: linear-gradient(145deg, #bbf0ff, #3b82f6); -webkit-background-clip: text; background-clip: text; color: transparent;">IT Global</span>
+            </div>
+            <div>
+                <span style="background: #0e2a3e80; padding: 6px 15px; border-radius: 40px; font-size: 0.8rem; border-left: 2px solid #4ade80;">🚀 Набор в команду</span>
+            </div>
+        </div>
+
+        <!-- АНИМИРОВАННЫЙ ЗАГОЛОВОК: СТАНЬ / ЧАСТЬЮ / БУДУЩЕГО -->
+        <div class="hero-title dan-font">
+            <div class="word title-light">СТАНЬ</div>
+            <div class="word title-blue">ЧАСТЬЮ</div>
+            <div class="word title-green">БУДУЩЕГО</div>
+        </div>
+        <div class="subhead dan-font" style="font-weight: 500;">
+            IT Global ecosystem — где рождаются технологии
+        </div>
+
+        <!-- 3 СЕРВИСА -->
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">🌐</div>
+                <h3 class="dan-font">GloBIT</h3>
+                <p>Основной пакет приложений для повседневных задач. Инструменты для безопасности файлов, оптимизации быта и офисных задач.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🎮</div>
+                <h3 class="dan-font">GloBIT Arcade</h3>
+                <p>Платформа ретро и современных игр. Мультиплеер, достижения, турниры. Для тех, кто ценит классику и современные механики.</p>
+            </div>
+            <div class="service-card">
+                <div class="service-icon">🔍</div>
+                <h3 class="dan-font">ITeep Scan</h3>
+                <p>Комплексная проверка на вирусы, уязвимости и легальность ПО. Машинное обучение для обнаружения новых угроз.</p>
+            </div>
+        </div>
+
+        <!-- ПРЕИМУЩЕСТВА -->
+        <div class="benefits">
+            <h2 class="dan-font">💫 Наши условия — твой комфорт</h2>
+            <div class="benefits-grid">
+                <div class="benefit-item">
+                    <span class="benefit-icon">⚡</span>
+                    <div class="benefit-title">Уверенность в себе</div>
+                    <div class="benefit-desc">Ценим твои идеи. Никакого микроменеджмента — только доверие и поддержка.</div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🕒</span>
+                    <div class="benefit-title">Гибкий график</div>
+                    <div class="benefit-desc">Работай когда удобно. Результат важнее часов в офисе.</div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🤝</span>
+                    <div class="benefit-title">Дружелюбная команда</div>
+                    <div class="benefit-desc">Никакого токсичного общения. Взаимопомощь, уважение, классная атмосфера.</div>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🌿</span>
+                    <div class="benefit-title">Без перегруза</div>
+                    <div class="benefit-desc">Не нагружаем сильно. Работа в удовольствие, без выгорания.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- НЕЙРОСЕТИ И УСТРОЙСТВО -->
+        <div class="ai-requirements">
+            <h3 class="dan-font">🧠 Что нужно от тебя?</h3>
+            <p>Главное — уметь пользоваться нейросетями и иметь любое устройство с постоянным доступом в интернет.</p>
+            <div class="badge-list">
+                <span class="badge">🤖 DeepSeek</span>
+                <span class="badge">🐙 Qwen</span>
+                <span class="badge">💻 Ноутбук / ПК / Планшет</span>
+                <span class="badge">🌍 Wi-Fi / Мобильный интернет</span>
+                <span class="badge">📚 Обучаем сами с нуля</span>
+            </div>
+            <p style="margin-top: 1.2rem; font-size: 0.9rem; opacity: 0.8;">Остальному научим. Главное — желание и доступ в сеть.</p>
+        </div>
+
+        <!-- ФОРМА ЗАЯВКИ (отправляется в админ-панель) -->
+        <div class="application-form">
+            <h2 class="dan-font">📝 Заявка на вступление</h2>
+            <form id="applicationForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>📱 Номер телефона *</label>
+                        <input type="tel" id="phone" required placeholder="+7 XXX XXX XX XX">
+                    </div>
+                    <div class="form-group">
+                        <label>📧 Telegram (не обязательно)</label>
+                        <input type="text" id="telegram" placeholder="@username">
+                    </div>
+                    <div class="form-group">
+                        <label>🎂 Дата рождения *</label>
+                        <input type="date" id="birthdate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>👤 Имя и Фамилия *</label>
+                        <input type="text" id="fullname" required placeholder="Иван Иванов">
+                    </div>
+                    <div class="form-group form-full">
+                        <label>💭 Что хочешь рассказать о себе?</label>
+                        <textarea id="about" placeholder="Расскажи о своих навыках, опыте работы с нейросетями, почему хочешь к нам..."></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn dan-font">➤ Отправить заявку</button>
+            </form>
+        </div>
+
+        <!-- СЛОГАН, ПОЯВЛЯЮЩИЙСЯ ПРИ СКРОЛЛЕ -->
+        <div class="slogan-block" id="sloganBlock">
+            <div class="slogan-text">✨ IT Global ✨</div>
+            <div class="slogan-sub">Ваш личный помощник в цифровом мире</div>
+        </div>
+
+        <footer>
+            <p>© 2026 IT Global. Все права защищены. | Сервисы: GloBIT, GloBIT Arcade, ITeep Scan</p>
+            <p style="margin-top: 8px;">✉️ career@itglobal.com | 📱 +7 (995) 009-19-35</p>
+        </footer>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA6GGJxAiao77U7_9mBUEjftmS_FnSWbIw",
+            authDomain: "glob-data.firebaseapp.com",
+            projectId: "glob-data",
+            storageBucket: "glob-data.firebasestorage.app",
+            messagingSenderId: "122757049174",
+            appId: "1:122757049174:web:ebb425edd0e1a8ea9a44f7"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore();
+
+        // Анимация появления слогана при скролле
+        const sloganBlock = document.getElementById('sloganBlock');
+        
+        function checkSloganVisibility() {
+            const rect = sloganBlock.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            if (rect.top <= windowHeight - 100) {
+                sloganBlock.classList.add('visible');
+            }
+        }
+
+        window.addEventListener('scroll', checkSloganVisibility);
+        checkSloganVisibility();
+
+        // Отправка формы в Firebase (коллекция join_requests)
+        const form = document.getElementById('applicationForm');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const phone = document.getElementById('phone').value;
+            const telegram = document.getElementById('telegram').value;
+            const birthdate = document.getElementById('birthdate').value;
+            const fullname = document.getElementById('fullname').value;
+            const about = document.getElementById('about').value;
+            
+            if (!phone || !birthdate || !fullname) {
+                alert('Пожалуйста, заполните обязательные поля: номер телефона, дату рождения и имя с фамилией');
+                return;
+            }
+            
+            const submitBtn = form.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '⏳ Отправка...';
+            submitBtn.disabled = true;
+            
+            try {
+                await addDoc(collection(db, "join_requests"), {
+                    phone: phone,
+                    telegram: telegram || null,
+                    birthdate: birthdate,
+                    fullname: fullname,
+                    about: about || null,
+                    createdAt: Timestamp.now(),
+                    status: "pending"
+                });
+                
+                alert('✅ Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+                form.reset();
+            } catch (error) {
+                console.error('Ошибка:', error);
+                alert('❌ Ошибка при отправке. Пожалуйста, попробуйте ещё раз или свяжитесь с нами напрямую.');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
