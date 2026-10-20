@@ -376,6 +376,21 @@
                 min-width: 100%;
             }
         }
+        body { isolation:isolate; }
+        body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:radial-gradient(ellipse at 15% 10%,rgba(0,153,255,.20),transparent 38%),radial-gradient(ellipse at 85% 25%,rgba(0,255,170,.12),transparent 34%),linear-gradient(rgba(75,150,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(75,150,255,.055) 1px,transparent 1px);background-size:auto,auto,42px 42px,42px 42px;mask-image:linear-gradient(to bottom,black,transparent 90%)}
+        body::after{content:"";position:fixed;width:28rem;height:28rem;border-radius:50%;right:-14rem;top:20%;background:#00aaff18;filter:blur(70px);pointer-events:none;z-index:-1;animation:ambientFloat 12s ease-in-out infinite alternate}
+        @keyframes ambientFloat{from{transform:translate3d(0,-20px,0) scale(.9)}to{transform:translate3d(-80px,80px,0) scale(1.15)}}
+        .container{position:relative}
+        .service-card,.benefit-item,.application-form,.benefits,.ai-requirements,.slogan-block{box-shadow:0 18px 60px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.045)}
+        .service-card{position:relative;overflow:hidden}
+        .service-card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:linear-gradient(135deg,rgba(0,242,254,.55),transparent 40%,rgba(74,222,128,.35));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+        .service-icon{filter:drop-shadow(0 0 16px rgba(0,242,254,.25))}
+        .application-form{position:relative;overflow:hidden}
+        .application-form::before{content:"";position:absolute;width:18rem;height:18rem;right:-9rem;top:-9rem;border-radius:50%;border:1px solid rgba(0,242,254,.18);box-shadow:0 0 0 24px rgba(0,242,254,.025),0 0 0 48px rgba(0,242,254,.02);pointer-events:none}
+        .form-group input:focus-visible,.form-group textarea:focus-visible,.submit-btn:focus-visible{outline:2px solid #00ffaa;outline-offset:3px}
+        .submit-btn{position:relative;overflow:hidden}
+        .submit-btn:disabled{opacity:.65;cursor:wait;transform:none}
+        @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
     </style>
 </head>
 <body>
