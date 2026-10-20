@@ -482,15 +482,23 @@
             <form id="applicationForm">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>🎂 Дата рождения *</label>
-                        <input type="date" id="birthdate" required>
+                        <label for="fullname">👤 ФИО *</label>
+                        <input type="text" id="fullname" required maxlength="100" autocomplete="name" placeholder="Иванов Иван Иванович">
                     </div>
                     <div class="form-group">
-                        <label>👤 Имя и Фамилия *</label>
-                        <input type="text" id="fullname" required maxlength="100" autocomplete="name" placeholder="Иван Иванов">
+                        <label for="email">✉️ Электронная почта *</label>
+                        <input type="email" id="email" required maxlength="254" autocomplete="email" placeholder="name@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">📱 Номер телефона *</label>
+                        <input type="tel" id="phone" required maxlength="30" autocomplete="tel" placeholder="+7 (999) 123-45-67">
+                    </div>
+                    <div class="form-group">
+                        <label for="birthdate">🎂 Дата рождения *</label>
+                        <input type="date" id="birthdate" required>
                     </div>
                     <div class="form-group form-full">
-                        <label>💭 Что хочешь рассказать о себе?</label>
+                        <label for="about">💭 О себе</label>
                         <textarea id="about" maxlength="1200" placeholder="Расскажи о своих навыках, опыте работы с нейросетями, почему хочешь к нам..."></textarea>
                     </div>
                 </div>
@@ -507,7 +515,6 @@
 
         <footer>
             <p>© 2026 IT Global. Все права защищены. | Сервисы: GloBIT, GloBIT Arcade, ITeep Scan</p>
-            <p style="margin-top: 8px;">✉️ career@itglobal.com | 📱 +7 (995) 009-19-35</p>
         </footer>
     </div>
 
@@ -549,6 +556,8 @@
             
             const birthdate = document.getElementById('birthdate').value;
             const fullname = document.getElementById('fullname').value.trim().replace(/\s+/g, ' ');
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
             const about = document.getElementById('about').value.trim();
             const statusBox = document.getElementById('formStatus');
             const showStatus = (text, ok) => {
@@ -558,12 +567,20 @@
                 statusBox.style.borderColor = ok ? '#4ade80' : '#fb7185';
             };
             
-            if (!birthdate || !fullname) {
-                showStatus('Заполните дату рождения и имя с фамилией.', false);
+            if (!birthdate || !fullname || !email || !phone) {
+                showStatus('Заполните ФИО, почту, номер телефона и дату рождения.', false);
                 return;
             }
-            if (fullname.length < 2 || fullname.length > 100 || about.length > 1200) {
+            if (fullname.length < 2 || fullname.length > 100 || email.length > 254 || phone.length > 30 || about.length > 1200) {
                 showStatus('Проверьте длину введённых данных.', false);
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showStatus('Укажите корректный адрес электронной почты.', false);
+                return;
+            }
+            if (phone.replace(/\D/g, '').length < 7) {
+                showStatus('Укажите корректный номер телефона.', false);
                 return;
             }
             const birthday = new Date(birthdate);
@@ -581,6 +598,8 @@
                 await addDoc(collection(db, "join_requests"), {
                     birthdate: birthdate,
                     fullname: fullname,
+                    email: email,
+                    phone: phone,
                     about: about || null,
                     createdAt: Timestamp.now(),
                     status: "pending"
