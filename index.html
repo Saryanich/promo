@@ -483,11 +483,11 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>📱 Номер телефона *</label>
-                        <input type="tel" id="phone" required placeholder="+7 XXX XXX XX XX">
+                        <input type="tel" id="phone" required maxlength="40" autocomplete="tel" placeholder="+7 XXX XXX XX XX">
                     </div>
                     <div class="form-group">
                         <label>📧 Telegram (не обязательно)</label>
-                        <input type="text" id="telegram" placeholder="@username">
+                        <input type="text" id="telegram" maxlength="80" autocomplete="off" placeholder="@username">
                     </div>
                     <div class="form-group">
                         <label>🎂 Дата рождения *</label>
@@ -495,14 +495,15 @@
                     </div>
                     <div class="form-group">
                         <label>👤 Имя и Фамилия *</label>
-                        <input type="text" id="fullname" required placeholder="Иван Иванов">
+                        <input type="text" id="fullname" required maxlength="100" autocomplete="name" placeholder="Иван Иванов">
                     </div>
                     <div class="form-group form-full">
                         <label>💭 Что хочешь рассказать о себе?</label>
-                        <textarea id="about" placeholder="Расскажи о своих навыках, опыте работы с нейросетями, почему хочешь к нам..."></textarea>
+                        <textarea id="about" maxlength="1200" placeholder="Расскажи о своих навыках, опыте работы с нейросетями, почему хочешь к нам..."></textarea>
                     </div>
                 </div>
                 <button type="submit" class="submit-btn dan-font">➤ Отправить заявку</button>
+                <div id="formStatus" role="status" aria-live="polite" style="display:none;margin-top:16px;padding:14px;border-radius:14px;border:1px solid #2c5282;background:#07162b;"></div>
             </form>
         </div>
 
@@ -554,20 +555,36 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const phone = document.getElementById('phone').value;
-            const telegram = document.getElementById('telegram').value;
+            const phone = document.getElementById('phone').value.trim();
+            const telegram = document.getElementById('telegram').value.trim();
             const birthdate = document.getElementById('birthdate').value;
-            const fullname = document.getElementById('fullname').value;
-            const about = document.getElementById('about').value;
+            const fullname = document.getElementById('fullname').value.trim().replace(/\\s+/g, ' ');
+            const about = document.getElementById('about').value.trim();
+            const statusBox = document.getElementById('formStatus');
+            const showStatus = (text, ok) => {
+                statusBox.textContent = text;
+                statusBox.style.display = 'block';
+                statusBox.style.color = ok ? '#a7f3d0' : '#fecdd3';
+                statusBox.style.borderColor = ok ? '#4ade80' : '#fb7185';
+            };
             
             if (!phone || !birthdate || !fullname) {
-                alert('Пожалуйста, заполните обязательные поля: номер телефона, дату рождения и имя с фамилией');
+                showStatus('Заполните телефон, дату рождения и имя с фамилией.', false);
+                return;
+            }
+            if (fullname.length < 2 || fullname.length > 100 || phone.length > 40 || telegram.length > 80 || about.length > 1200) {
+                showStatus('Проверьте длину введённых данных.', false);
+                return;
+            }
+            const birthday = new Date(birthdate);
+            if (!Number.isFinite(birthday.getTime()) || birthday > new Date() || birthday.getFullYear() < 1900) {
+                showStatus('Укажите корректную дату рождения.', false);
                 return;
             }
             
             const submitBtn = form.querySelector('.submit-btn');
             const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '⏳ Отправка...';
+            submitBtn.textContent = '⏳ Отправка…';
             submitBtn.disabled = true;
             
             try {
@@ -581,13 +598,13 @@
                     status: "pending"
                 });
                 
-                alert('✅ Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+                showStatus('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.', true);
                 form.reset();
             } catch (error) {
                 console.error('Ошибка:', error);
-                alert('❌ Ошибка при отправке. Пожалуйста, попробуйте ещё раз или свяжитесь с нами напрямую.');
+                showStatus('Не удалось отправить заявку. Проверьте подключение и попробуйте позже.', false);
             } finally {
-                submitBtn.innerHTML = originalText;
+                submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
             }
         });
