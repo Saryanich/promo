@@ -809,8 +809,13 @@
                     accountEmail: currentUser.email || null
                 });
                 
-                showStatus('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.', true);
+                showStatus('Заявка успешно отправлена! Через 5 секунд вы перейдёте на страницу проверки статуса по Global ID.', true);
                 form.reset();
+                submitBtn.disabled = true;
+                submitBtn.textContent = '✓ Заявка отправлена';
+                window.setTimeout(() => {
+                    window.location.href = 'https://saryanich.github.io/for_developers/entrance.html';
+                }, 5000);
             } catch (error) {
                 console.error('Ошибка отправки заявки в Firestore:', {
                     code: error?.code || 'unknown',
