@@ -505,6 +505,10 @@
                         <input type="text" id="fullname" required maxlength="100" autocomplete="name" placeholder="Иванов Иван Иванович">
                     </div>
                     <div class="form-group">
+                        <label for="telegram">✈️ Telegram</label>
+                        <input type="text" id="telegram" maxlength="64" autocomplete="off" placeholder="@username">
+                    </div>
+                    <div class="form-group">
                         <label for="email">✉️ Электронная почта *</label>
                         <input type="email" id="email" required maxlength="254" autocomplete="email" placeholder="name@example.com">
                     </div>
@@ -521,6 +525,7 @@
                         <textarea id="about" maxlength="1200" placeholder="Расскажи о своих навыках, опыте работы с нейросетями, почему хочешь к нам..."></textarea>
                     </div>
                 </div>
+                <p id="profileSyncStatus" role="status" aria-live="polite" style="margin-top:12px;font-size:.9rem;color:#b9d0f0;">Войдите через Global ID, чтобы загрузить данные профиля.</p>
                 <button type="submit" class="submit-btn dan-font">➤ Отправить заявку</button>
                 <div id="formStatus" role="status" aria-live="polite" style="display:none;margin-top:16px;padding:14px;border-radius:14px;border:1px solid #2c5282;background:#07162b;"></div>
             </form>
@@ -540,7 +545,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, Timestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, Timestamp, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA6GGJxAiao77U7_9mBUEjftmS_FnSWbIw",
@@ -570,6 +575,52 @@
         };
         let signedInGlobalId = null;
         let signedInUserData = null;
+        let profileSaveQueue = Promise.resolve();
+        const profileFieldMap = {
+            fullname: 'fullName',
+            birthdate: 'birthDate',
+            phone: 'phoneNumber',
+            telegram: 'telegram'
+        };
+        const profileInputIds = ['fullname', 'birthdate', 'phone', 'telegram'];
+
+        function fillApplicationFromProfile(profile) {
+            document.getElementById('fullname').value = profile.fullName || '';
+            document.getElementById('birthdate').value = profile.birthDate || '';
+            document.getElementById('phone').value = profile.phoneNumber || '';
+            document.getElementById('telegram').value = profile.telegram || '';
+        }
+
+        async function saveProfileField(inputId) {
+            const user = auth.currentUser;
+            const field = profileFieldMap[inputId];
+            if (!user || !signedInUserData || !field) return;
+            const input = document.getElementById(inputId);
+            const value = input.value.trim();
+            const statusBox = document.getElementById('profileSyncStatus');
+            profileSaveQueue = profileSaveQueue.then(async () => {
+                try {
+                    await updateDoc(doc(db, 'users', user.uid), {
+                        [field]: value,
+                        lastUpdated: serverTimestamp()
+                    });
+                    signedInUserData = { ...signedInUserData, [field]: value };
+                    statusBox.textContent = 'Изменения профиля сохранены в Global ID.';
+                    statusBox.style.color = '#a7f3d0';
+                } catch (error) {
+                    console.error('Не удалось сохранить поле профиля:', field, error);
+                    statusBox.textContent = 'Не удалось сохранить изменения в Global ID. Проверьте правила Firestore и попробуйте ещё раз.';
+                    statusBox.style.color = '#fecdd3';
+                }
+            });
+            return profileSaveQueue;
+        }
+
+        profileInputIds.forEach((id) => {
+            const input = document.getElementById(id);
+            input.addEventListener('change', () => saveProfileField(id));
+            input.addEventListener('blur', () => saveProfileField(id));
+        });
 
         onAuthStateChanged(auth, async (user) => {
             signedInGlobalId = null;
@@ -590,6 +641,8 @@
                 }
                 signedInUserData = userData;
                 signedInGlobalId = typeof userData.globalId === 'string' ? userData.globalId : null;
+                fillApplicationFromProfile(userData);
+                document.getElementById('profileSyncStatus').textContent = 'Данные загружены из профиля Global ID. Изменения будут сохраняться автоматически.';
                 authStatus.textContent = 'Вход выполнен: ' + (signedInGlobalId || user.email || 'Global ID');
                 loginForm.style.display = 'none';
                 document.getElementById('promoLogoutButton').style.display = 'inline-flex';
@@ -702,6 +755,22 @@
                 showStatus('Заполните ФИО, почту, номер телефона и дату рождения.', false);
                 return;
             }
+            try {
+                await profileSaveQueue;
+                const latestProfile = {
+                    fullName: fullname,
+                    birthDate: birthdate,
+                    phoneNumber: phone,
+                    telegram: document.getElementById('telegram').value.trim(),
+                    lastUpdated: serverTimestamp()
+                };
+                await updateDoc(doc(db, 'users', currentUser.uid), latestProfile);
+                signedInUserData = { ...signedInUserData, ...latestProfile };
+            } catch (error) {
+                console.error('Не удалось синхронизировать профиль перед отправкой:', error);
+                showStatus('Не удалось сохранить данные профиля в Global ID. Заявка не отправлена; проверьте права Firestore и повторите попытку.', false);
+                return;
+            }
             if (fullname.length < 2 || fullname.length > 100 || email.length > 254 || phone.length > 30 || about.length > 1200) {
                 showStatus('Проверьте длину введённых данных.', false);
                 return;
@@ -731,6 +800,7 @@
                     fullname: fullname,
                     email: email,
                     phone: phone,
+                    telegram: document.getElementById('telegram').value.trim() || null,
                     about: about || null,
                     createdAt: Timestamp.now(),
                     status: "pending",
