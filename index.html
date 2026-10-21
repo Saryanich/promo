@@ -608,8 +608,18 @@
                 showStatus('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.', true);
                 form.reset();
             } catch (error) {
-                console.error('Ошибка:', error);
-                showStatus('Не удалось отправить заявку. Проверьте подключение и попробуйте позже.', false);
+                console.error('Ошибка отправки заявки в Firestore:', {
+                    code: error?.code || 'unknown',
+                    message: error?.message || String(error)
+                });
+                const code = String(error?.code || '');
+                if (code.includes('permission-denied')) {
+                    showStatus('Firebase отклонил заявку (permission-denied): правила Firestore не разрешают отправлять публичные заявки в join_requests. Нужно разрешить создание заявки без входа, оставив чтение/изменение только администраторам.', false);
+                } else if (code.includes('unavailable') || code.includes('deadline-exceeded')) {
+                    showStatus('Firebase временно недоступен. Проверьте интернет и попробуйте ещё раз.', false);
+                } else {
+                    showStatus('Не удалось отправить заявку. Код ошибки: ' + (code || 'unknown') + '. Подробности доступны в консоли браузера.', false);
+                }
             } finally {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
