@@ -476,6 +476,25 @@
             <p style="margin-top: 1.2rem; font-size: 0.9rem; opacity: 0.8;">Остальному научим. Главное — желание и доступ в сеть.</p>
         </div>
 
+        <!-- ВХОД GLOBAL ID: без дополнительного 2FA в Promo -->
+        <div class="application-form" id="promoAuthPanel">
+            <h2 class="dan-font">🔐 Вход через Global ID</h2>
+            <p id="promoAuthStatus" style="text-align:center;color:#b9d0f0;margin-bottom:1.25rem;">Для отправки заявки войдите через Global ID.</p>
+            <form id="promoLoginForm" style="display:grid;gap:1rem;max-width:560px;margin:0 auto;">
+                <div class="form-group">
+                    <label for="promoGlobalId">Global ID (22 символа)</label>
+                    <input id="promoGlobalId" type="text" required maxlength="22" autocomplete="username" placeholder="Ваш Global ID">
+                </div>
+                <div class="form-group">
+                    <label for="promoPassword">Пароль Global ID</label>
+                    <input id="promoPassword" type="password" required autocomplete="current-password" placeholder="Пароль аккаунта">
+                </div>
+                <button type="submit" id="promoLoginButton" class="submit-btn dan-font">Войти через Global ID</button>
+                <div id="promoLoginMessage" role="status" aria-live="polite" style="display:none;padding:14px;border-radius:14px;border:1px solid #2c5282;background:#07162b;"></div>
+            </form>
+            <button type="button" id="promoLogoutButton" class="submit-btn dan-font" style="display:none;margin:1rem auto 0;max-width:560px;background:linear-gradient(95deg,#334155,#64748b);">Выйти из Global ID</button>
+        </div>
+
         <!-- ФОРМА ЗАЯВКИ (отправляется в админ-панель) -->
         <div class="application-form">
             <h2 class="dan-font">📝 Заявка на вступление</h2>
@@ -520,7 +539,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, Timestamp, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA6GGJxAiao77U7_9mBUEjftmS_FnSWbIw",
@@ -532,7 +552,112 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore();
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        await setPersistence(auth, browserLocalPersistence);
+
+        // Авторизация Global ID для Promo: Firebase Auth напрямую, без экранов 2FA.
+        const authPanel = document.getElementById('promoAuthPanel');
+        const authStatus = document.getElementById('promoAuthStatus');
+        const loginForm = document.getElementById('promoLoginForm');
+        const loginButton = document.getElementById('promoLoginButton');
+        const loginMessage = document.getElementById('promoLoginMessage');
+        const showLoginMessage = (message, ok = false) => {
+            loginMessage.textContent = message;
+            loginMessage.style.display = 'block';
+            loginMessage.style.color = ok ? '#a7f3d0' : '#fecdd3';
+            loginMessage.style.borderColor = ok ? '#4ade80' : '#fb7185';
+        };
+        let signedInGlobalId = null;
+        let signedInUserData = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            signedInGlobalId = null;
+            signedInUserData = null;
+            if (!user) {
+                authStatus.textContent = 'Для отправки заявки войдите через Global ID.';
+                loginForm.style.display = 'grid';
+                document.getElementById('promoLogoutButton').style.display = 'none';
+                return;
+            }
+            try {
+                const userSnap = await getDoc(doc(db, 'users', user.uid));
+                if (!userSnap.exists()) throw new Error('Профиль Global ID не найден.');
+                const userData = userSnap.data();
+                if (userData.globalIdAccess === false || userData.accountLocked === true) {
+                    await signOut(auth);
+                    throw new Error('Доступ к аккаунту отключён или аккаунт заблокирован.');
+                }
+                signedInUserData = userData;
+                signedInGlobalId = typeof userData.globalId === 'string' ? userData.globalId : null;
+                authStatus.textContent = 'Вход выполнен: ' + (signedInGlobalId || user.email || 'Global ID');
+                loginForm.style.display = 'none';
+                document.getElementById('promoLogoutButton').style.display = 'inline-flex';
+                loginMessage.style.display = 'none';
+            } catch (error) {
+                console.error('Promo auth profile check failed:', error);
+                authStatus.textContent = 'Не удалось подтвердить профиль Global ID.';
+                loginForm.style.display = 'grid';
+                document.getElementById('promoLogoutButton').style.display = 'none';
+                if (user) {
+                    try { await signOut(auth); } catch {}
+                }
+            }
+        });
+
+        loginForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const identifier = document.getElementById('promoGlobalId').value.trim().replace(/\\s+/g, '');
+            const password = document.getElementById('promoPassword').value;
+            if (!identifier || !password) {
+                showLoginMessage('Введите Global ID и пароль.', false);
+                return;
+            }
+            if (!/^[0-9a-zA-Z]{22}$/.test(identifier)) {
+                showLoginMessage('Global ID должен содержать 22 латинские буквы или цифры.', false);
+                return;
+            }
+            loginButton.disabled = true;
+            loginButton.textContent = '⏳ Входим…';
+            try {
+                const gidSnap = await getDoc(doc(db, 'global_ids', identifier));
+                const mapping = gidSnap.exists() ? gidSnap.data() : null;
+                if (!mapping || typeof mapping.email !== 'string' || !mapping.email.includes('@')) {
+                    throw new Error('Global ID не найден или не привязан к почте.');
+                }
+                const credential = await signInWithEmailAndPassword(auth, mapping.email.trim(), password);
+                const profileSnap = await getDoc(doc(db, 'users', credential.user.uid));
+                const profile = profileSnap.exists() ? profileSnap.data() : null;
+                if (!profile || profile.globalId !== identifier) {
+                    await signOut(auth);
+                    throw new Error('Global ID не совпадает с профилем аккаунта.');
+                }
+                if (profile.globalIdAccess === false || profile.accountLocked === true) {
+                    await signOut(auth);
+                    throw new Error('Доступ к аккаунту отключён или аккаунт заблокирован.');
+                }
+                document.getElementById('promoPassword').value = '';
+                showLoginMessage('Вход выполнен. Теперь можно отправить заявку.', true);
+            } catch (error) {
+                console.error('Promo login failed:', error);
+                const code = String(error?.code || '');
+                let message = error?.message || 'Не удалось войти.';
+                if (code.includes('invalid-credential') || code.includes('wrong-password') || code.includes('user-not-found')) {
+                    message = 'Неверный Global ID или пароль.';
+                } else if (code.includes('permission-denied')) {
+                    message = 'Firebase запретил чтение профиля или Global ID. Проверьте правила Firestore.';
+                }
+                showLoginMessage(message, false);
+            } finally {
+                loginButton.disabled = false;
+                loginButton.textContent = 'Войти через Global ID';
+            }
+        });
+
+        document.getElementById('promoLogoutButton').addEventListener('click', async () => {
+            await signOut(auth);
+            showLoginMessage('Вы вышли из аккаунта.', true);
+        });
 
         // Анимация появления слогана при скролле
         const sloganBlock = document.getElementById('sloganBlock');
@@ -567,6 +692,12 @@
                 statusBox.style.borderColor = ok ? '#4ade80' : '#fb7185';
             };
             
+            const currentUser = auth.currentUser;
+            if (!currentUser || !signedInUserData || !signedInGlobalId) {
+                showStatus('Сначала войдите через Global ID в блоке выше. Без входа отправить заявку нельзя.', false);
+                document.getElementById('promoAuthPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
             if (!birthdate || !fullname || !email || !phone) {
                 showStatus('Заполните ФИО, почту, номер телефона и дату рождения.', false);
                 return;
@@ -602,7 +733,10 @@
                     phone: phone,
                     about: about || null,
                     createdAt: Timestamp.now(),
-                    status: "pending"
+                    status: "pending",
+                    uid: currentUser.uid,
+                    globalId: signedInGlobalId,
+                    accountEmail: currentUser.email || null
                 });
                 
                 showStatus('Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.', true);
@@ -614,7 +748,7 @@
                 });
                 const code = String(error?.code || '');
                 if (code.includes('permission-denied')) {
-                    showStatus('Firebase отклонил заявку (permission-denied): правила Firestore не разрешают отправлять публичные заявки в join_requests. Нужно разрешить создание заявки без входа, оставив чтение/изменение только администраторам.', false);
+                    showStatus('Firebase отклонил заявку (permission-denied). Проверьте правила Firestore: пользователь должен быть авторизован и иметь право создать заявку в join_requests.', false);
                 } else if (code.includes('unavailable') || code.includes('deadline-exceeded')) {
                     showStatus('Firebase временно недоступен. Проверьте интернет и попробуйте ещё раз.', false);
                 } else {
