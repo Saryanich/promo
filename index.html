@@ -607,7 +607,7 @@
 
         loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const identifier = document.getElementById('promoGlobalId').value.trim().replace(/\\s+/g, '');
+            const identifier = document.getElementById('promoGlobalId').value.trim().replace(/\s+/g, '');
             const password = document.getElementById('promoPassword').value;
             if (!identifier || !password) {
                 showLoginMessage('Введите Global ID и пароль.', false);
